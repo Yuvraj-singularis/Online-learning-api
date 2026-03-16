@@ -1,25 +1,18 @@
 import { Injectable } from '@nestjs/common';
-import { PrismaService } from '../prisma/prisma.service';
+import { CrudService } from '../common/services/crud.service';
 import { CreateEnrollmentDto } from './dto/create-enrollment.dto';
 
 @Injectable()
 export class EnrollmentsService {
 
-  constructor(private prisma: PrismaService) {}
+  constructor(private crudService: CrudService) {}
 
   async create(data: CreateEnrollmentDto) {
-    return this.prisma.enrollment.create({
-      data,
-    });
+    return this.crudService.create('enrollment', data);
   }
 
   async findAll() {
-    return this.prisma.enrollment.findMany({
-      include: {
-        student: true,
-        course: true,
-      },
-    });
+    return this.crudService.findAll('enrollment');
   }
 
 }
