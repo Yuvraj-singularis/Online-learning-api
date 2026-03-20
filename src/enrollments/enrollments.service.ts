@@ -1,18 +1,24 @@
 import { Injectable } from '@nestjs/common';
-import { CrudService } from '../common/services/crud.service';
+import { executeQuery } from '../common/db/execute-query';
 import { CreateEnrollmentDto } from './dto/create-enrollment.dto';
 
 @Injectable()
 export class EnrollmentsService {
 
-  constructor(private crudService: CrudService) {}
-
   async create(data: CreateEnrollmentDto) {
-    return this.crudService.create('enrollment', data);
+    return executeQuery(
+      `INSERT INTO "Enrollment"( "studentId", "courseId")
+       VALUES ($1, $2) RETURNING *`,
+      [data.studentId, data.courseId]
+    );
   }
 
   async findAll() {
-    return this.crudService.findAll('enrollment');
+    return executeQuery(`
+      SELECT e.*, s.name as student_name, c.title as course_title
+      FROM "Enrollment" e
+      JOIN "Student" s ON e."studentId" = s.id
+      JOIN "Course" c ON e."courseId" = c.id
+    `);
   }
-
 }

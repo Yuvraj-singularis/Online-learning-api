@@ -1,28 +1,35 @@
 import { Injectable } from '@nestjs/common';
-import { PrismaService } from '../prisma/prisma.service';
+import { executeQuery } from '../common/db/execute-query';
 import { CreateStudentDto } from './dto/create-student.dto';
-import { CrudService } from '../common/services/crud.service';
-
 
 @Injectable()
 export class StudentsService {
 
-  constructor(private crudService: CrudService) {}
+  async create(data: CreateStudentDto) {
+    const query = `
+      INSERT INTO "Student" (name, email)
+      VALUES ($1, $2)
+      RETURNING *;
+    `;
 
-async create(data: CreateStudentDto) {
-  return this.crudService.create('student', data);
-}
+    return await executeQuery(query, [data.name, data.email]);
+  }
 
-async findAll() {
-  return this.crudService.findAll('student');
-}
+  async findAll() {
+    return await executeQuery(`SELECT * FROM "Student"`);
+  }
 
-async findOne(id: number) {
-  return this.crudService.findOne('student', id);
-}
+  async findOne(id: number) {
+    return await executeQuery(
+      `SELECT * FROM "Student" WHERE id = $1`,
+      [id]
+    );
+  }
 
-async remove(id: number) {
-  return this.crudService.delete('student', id);
-}
-
+  async remove(id: number) {
+    return await executeQuery(
+      `DELETE FROM "Student" WHERE id = $1 RETURNING *`,
+      [id]
+    );
+  }
 }
